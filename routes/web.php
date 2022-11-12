@@ -38,6 +38,7 @@ Route::post('/accountpage/update','AccountController@doUpdate');
 Route::post('/follow','FollowersController@doFollow');
 Route::post('/updatenotif','PostController@updateNotif')->name("updatenotif");
 Route::get('/notiflist','PostController@listNotif');
+Route::get('/allrecomendation','FollowersController@listRecomendation');
 /* Route::get('/registers','AuthController@index');
 Route::post('/signup','AuthController@signup');
 

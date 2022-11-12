@@ -31,6 +31,18 @@ class PostController extends Controller
                   ->select('post_id', DB::raw('count(id) as cnt_cmt'))  //hitung banyaknya likes
                   ->groupBy('post_id');
 
+        $listfollowing=DB::table('followers as z')
+                  ->select('z.user_id_flwrs as user_id')
+                  ->where('z.user_id','=',Auth::user()->id);
+
+        $listfirts=DB::table('followers as x')
+                    ->select('x.user_id')
+                    ->where('x.user_id_flwrs','=',Auth::user()->id)
+                    ->where('x.flag_mutual','=', '\'Y\'')
+                    ->union($listfollowing);
+
+        
+                      
 
         $list = DB::table('posts')//Post::all()->sortBy('updated_at');
                 ->join('users','users.id','=','posts.user_id')
@@ -48,6 +60,8 @@ class PostController extends Controller
                 
                 ->select('posts.id','posts.post_text','posts.img','posts.created_at', 'posts.updated_at', 'posts.user_id','isLiked.isUserLike',
                  'b.cnt_like', 'c.cnt_cmt', 'users.firstname','users.lastname','users.id as id_user_posted')
+                //->whereIn('posts.user_id',$listfollowing)
+                //->whereIn('posts.user_id',$listfirts)
                 ->orderBy('posts.created_at','desc')
                 ->get();
 
@@ -56,9 +70,9 @@ class PostController extends Controller
                           ->select('users.id','users.firstname','users.lastname','users.profession','users.photo')
                           ->where('users.id','<>',Auth::user()->id)
                           ->whereNotIn('users.id',DB::table('followers')->select('user_id_flwrs')->where('user_id','=',Auth::user()->id))
-                          ->where(function($query){
-                              $query->whereNull('followers.user_id')
-                                    ->orWhere('followers.flag_mutual','=','N');
+                          ->orWhere(function($query){
+                              $query->where('followers.user_id_flwrs','=',Auth::user()->id)
+                                    ->where('followers.flag_mutual','=','N');
                           })
                           ->limit(3)
                           ->get();
@@ -95,22 +109,24 @@ class PostController extends Controller
                        })
                        ->get();
 
-         $cnt_notif = DB::table('notif as a')
-                        ->join('notif_categories as b','a.notif_cat','=','b.id')
-                        ->select(DB::raw('count(a.id) as cnt_notif'))
-                        ->where('a.user_id','=',Auth::user()->id)
-                        ->where('a.read_yn','=','N')
-                        ->get();
-         
+        $cnt_notif = DB::table('notif as a')
+                       ->join('notif_categories as b','a.notif_cat','=','b.id')
+                       ->select(DB::raw('count(a.id) as cnt_notif'))
+                       ->where('a.user_id','=',Auth::user()->id)
+                       ->where('a.actor_id','<>',Auth::user()->id)
+                       ->where('a.read_yn','=','N')
+                       ->get();
+          
         $latestnotif = DB::table('notif as a')
-                        ->join('notif_categories as b','a.notif_cat','=','b.id')
-                        ->join('users as c','c.id','=','a.actor_id')
-                        ->leftjoin('posts as d', 'd.id','=','a.post_id')
-                        ->select('c.firstname', 'c.lastname', 'b.msg_display','a.notif_cat','d.id','a.id as id_notif')
-                        ->where('a.user_id','=',Auth::user()->id)
-                        ->where('a.read_yn','=','N')
-                        ->limit(3)
-                        ->get();
+                       ->join('notif_categories as b','a.notif_cat','=','b.id')
+                       ->join('users as c','c.id','=','a.actor_id')
+                       ->leftjoin('posts as d', 'd.id','=','a.post_id')
+                       ->select('c.firstname', 'c.lastname', 'b.msg_display','a.notif_cat','d.id','a.id as id_notif')
+                       ->where('a.user_id','=',Auth::user()->id)
+                       ->where('a.actor_id','<>',Auth::user()->id)
+                       ->where('a.read_yn','=','N')
+                       ->limit(3)
+                       ->get();
 
         //dd($cnt_following);
         return view('dashboard',compact('list','recomendation','cnt_following','cnt_like','cnt_followers','cnt_engage','cnt_notif','latestnotif'));
@@ -168,6 +184,7 @@ class PostController extends Controller
                ->select('a.id as id_notif','a.post_id','b.msg_display','d.firstname','d.lastname','a.notif_cat','a.read_yn',
                          'a.important_flag','a.created_at','d.photo')
                ->where('a.user_id','=',Auth::user()->id)
+               ->where('a.actor_id','<>',Auth::user()->id)
                ->orderBy('a.id','desc')
                ->get();
 $recomendation = DB::table('users')
@@ -175,9 +192,9 @@ $recomendation = DB::table('users')
                ->select('users.id','users.firstname','users.lastname','users.profession','users.photo')
                ->where('users.id','<>',Auth::user()->id)
                ->whereNotIn('users.id',DB::table('followers')->select('user_id_flwrs')->where('user_id','=',Auth::user()->id))
-               ->where(function($query){
-                   $query->whereNull('followers.user_id')
-                         ->orWhere('followers.flag_mutual','=','N');
+               ->orWhere(function($query){
+                   $query->where('followers.user_id_flwrs','=',Auth::user()->id)
+                         ->where('followers.flag_mutual','=','N');
                })
                ->limit(3)
                ->get();
@@ -218,6 +235,7 @@ $cnt_notif = DB::table('notif as a')
              ->join('notif_categories as b','a.notif_cat','=','b.id')
              ->select(DB::raw('count(a.id) as cnt_notif'))
              ->where('a.user_id','=',Auth::user()->id)
+             ->where('a.actor_id','<>',Auth::user()->id)
              ->where('a.read_yn','=','N')
              ->get();
 
@@ -227,6 +245,7 @@ $latestnotif = DB::table('notif as a')
              ->leftjoin('posts as d', 'd.id','=','a.post_id')
              ->select('c.firstname', 'c.lastname', 'b.msg_display','a.notif_cat','d.id','a.id as id_notif')
              ->where('a.user_id','=',Auth::user()->id)
+             ->where('a.actor_id','<>',Auth::user()->id)
              ->where('a.read_yn','=','N')
              ->limit(3)
              ->get();

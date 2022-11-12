@@ -7,7 +7,12 @@
                 <h5 class="widget-user-desc text-right">{{Auth::user()->profession}}</h5>
               </div>
               <div class="widget-user-image">
-                <img class="img-circle" src="{{asset('/uploads/photo_profile/'.Auth::user()->photo.'')}}" alt="User Avatar">
+                  @if (is_null(Auth::user()->photo))
+                    <img class="img-circle" src="{{asset('/template/dist/img/avatar.png')}}" alt="User Avatar">
+                  @else
+                    <img class="img-circle" src="{{asset('/uploads/photo_profile/'.Auth::user()->photo.'')}}" alt="User Avatar">
+                  @endif
+                
               </div>
               <div class="card-footer">
                     {{-- <div class="description-block" > --}}
@@ -31,7 +36,12 @@
                         <div class="row" >
                           <div class="col" >
                           <input type="hidden" name="id_follow" id="id_follow" value="{{$rec->id}}">
-                          <img src="{{asset('/uploads/photo_profile/'.$rec->photo.'')}}" alt="User Avatar" width="70" height="70">
+                          @if (is_null($rec->photo))
+                           <img src="{{asset('/template/dist/img/avatar.png')}}" alt="User Avatar" width="70" height="70">
+                          @else
+                            <img src="{{asset('/uploads/photo_profile/'.$rec->photo.'')}}" alt="User Avatar" width="70" height="70">
+                          @endif
+                          
                           </div>
                           <div class="col">
                               <div class="row">
@@ -51,7 +61,7 @@
               </div>
               <div class="card-footer">
                 <div style="text-align:center;">
-                    <a href="#" class="btn btn-sm" align="center">See More <i class="fa fa-arrow-right"></i></a>
+                    <a href="/allrecomendation" class="btn btn-sm" align="center">See More <i class="fa fa-arrow-right"></i></a>
                 </div>
                 
               </div>

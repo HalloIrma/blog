@@ -49,9 +49,9 @@ $recomendation = DB::table('users')
                 ->select('users.id','users.firstname','users.lastname','users.profession','users.photo')
                 ->where('users.id','<>',Auth::user()->id)
                 ->whereNotIn('users.id',DB::table('followers')->select('user_id_flwrs')->where('user_id','=',Auth::user()->id))
-                ->where(function($query){
-                    $query->whereNull('followers.user_id')
-                          ->orWhere('followers.flag_mutual','=','N');
+                ->orWhere(function($query){
+                    $query->where('followers.user_id_flwrs','=',Auth::user()->id)
+                          ->where('followers.flag_mutual','=','N');
                 })
                 ->limit(3)
                 ->get();
@@ -89,21 +89,23 @@ $cnt_engage = DB::table('followers')
              ->get();
 
 $cnt_notif = DB::table('notif as a')
-              ->join('notif_categories as b','a.notif_cat','=','b.id')
-              ->select(DB::raw('count(a.id) as cnt_notif'))
-              ->where('a.user_id','=',Auth::user()->id)
-              ->where('a.read_yn','=','N')
-              ->get();
+             ->join('notif_categories as b','a.notif_cat','=','b.id')
+             ->select(DB::raw('count(a.id) as cnt_notif'))
+             ->where('a.user_id','=',Auth::user()->id)
+             ->where('a.actor_id','<>',Auth::user()->id)
+             ->where('a.read_yn','=','N')
+             ->get();
 
 $latestnotif = DB::table('notif as a')
-              ->join('notif_categories as b','a.notif_cat','=','b.id')
-              ->join('users as c','c.id','=','a.actor_id')
-              ->leftjoin('posts as d', 'd.id','=','a.post_id')
-              ->select('c.firstname', 'c.lastname', 'b.msg_display','a.notif_cat','d.id','a.id as id_notif')
-              ->where('a.user_id','=',Auth::user()->id)
-              ->where('a.read_yn','=','N')
-              ->limit(3)
-              ->get();
+             ->join('notif_categories as b','a.notif_cat','=','b.id')
+             ->join('users as c','c.id','=','a.actor_id')
+             ->leftjoin('posts as d', 'd.id','=','a.post_id')
+             ->select('c.firstname', 'c.lastname', 'b.msg_display','a.notif_cat','d.id','a.id as id_notif')
+             ->where('a.user_id','=',Auth::user()->id)
+             ->where('a.actor_id','<>',Auth::user()->id)
+             ->where('a.read_yn','=','N')
+             ->limit(3)
+             ->get();
 
 
 

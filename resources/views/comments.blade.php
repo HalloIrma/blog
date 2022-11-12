@@ -7,7 +7,12 @@
         <div class="card card-widget">
                 <div class="card-header">
                   <div class="user-block">
-                    <img class="img-circle" src="{{asset('/uploads/photo_profile/'.$list[0]->photo.'')}}" alt="User Image">
+                    @if (is_null($list[0]->photo))
+                     <img class="img-circle" src="{{asset('/template/dist/img/avatar.png')}}" alt="User Image">
+                    @else
+                      <img class="img-circle" src="{{asset('/uploads/photo_profile/'.$list[0]->photo.'')}}" alt="User Image">
+                    @endif
+                    
                     <span class="username"><a href="#">{{$list[0]->firstname." ".$list[0]->lastname}}</a></span>
                     @if (is_null($list[0]->updated_at) == "false")
                       <span class="description">{{substr($list[0]->updated_at,0,10)}}</span>
@@ -57,7 +62,12 @@
                       @foreach ($list as $val)
                       <div class="card-comment">
                           <!-- User image -->
+                          @if (is_null($val->cmt_photo))
+                          <img class="img-circle img-sm" src="{{asset('/template/dist/img/avatar.png')}}" alt="User Image">
+                          @else
                           <img class="img-circle img-sm" src="{{asset('/uploads/photo_profile/'.$val->cmt_photo.'')}}" alt="User Image">
+                          @endif
+                         
                 
                           <div class="comment-text">
                             <span class="username">
@@ -79,7 +89,12 @@
                       <div class="card-footer">
                           <form action="/postcomment" method="post">
                             @csrf
+                            @if (is_null(Auth::user()->photo))
+                            <img class="img-fluid img-circle img-sm" src="{{asset('/template/dist/img/avatar.png')}}" alt="Alt Text">
+                            @else
                             <img class="img-fluid img-circle img-sm" src="{{asset('/uploads/photo_profile/'.Auth::user()->photo.'')}}" alt="Alt Text">
+                            @endif
+                            
                             <!-- .img-push is used to add margin to elements next to floating images -->
                             
                             <div class="img-push">
@@ -95,7 +110,11 @@
                       <div class="card-footer">
                           <form action="/postcomment" method="post">
                             @csrf
+                            @if (is_null(Auth::user()->photo))
+                            <img class="img-fluid img-circle img-sm" src="{{asset('/template/dist/img/avatar.png')}}" alt="Alt Text">
+                            @else
                             <img class="img-fluid img-circle img-sm" src="{{asset('/uploads/photo_profile/'.Auth::user()->photo.'')}}" alt="Alt Text">
+                            @endif
                             <!-- .img-push is used to add margin to elements next to floating images -->
                             
                             <div class="img-push">
